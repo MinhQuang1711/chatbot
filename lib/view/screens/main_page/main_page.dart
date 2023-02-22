@@ -7,6 +7,7 @@ import 'package:flutter_application_3/model/message_model.dart';
 import 'package:flutter_application_3/service/network.dart';
 import 'package:flutter_application_3/service/speech_service.dart';
 import 'package:flutter_application_3/view/screens/main_page/loading.dart';
+import 'package:flutter_application_3/view/screens/main_page/manual_widget.dart';
 import 'package:flutter_application_3/view/widget/chat_widget.dart';
 
 import 'package:flutter_tts/flutter_tts.dart'as tts;
@@ -29,17 +30,6 @@ class _MainPageState extends State<MainPage> {
   late Timer  _timer;
   tts.FlutterTts textToSpeech= tts.FlutterTts();
 
-  speak(List<String> listtext)async{
-    await textToSpeech.setLanguage("vi-VN");
-    for(int i=0 ; i < listtext.length;i++)
-    {
-      await textToSpeech.speak(listtext[i]);
-    }
-  }
-
-  stopSpeak()async{
-    await textToSpeech.stop();
-  }
 
   void startUserManual(){
     if(!userManual)
@@ -47,18 +37,18 @@ class _MainPageState extends State<MainPage> {
       setState(() {
         userManual=true;
       });
-      speak(listQuestions);
+      SpeechService.speak(listQuestions,textToSpeech);
     }
     else{
       setState(() {
         userManual=false;
       });
-      stopSpeak();
+      SpeechService.stopSpeak(textToSpeech);
     }
   }
 
-  void CountTime() {
-  int _start = 7;
+  Future<void> CountTime()async {
+  int _start = 5;
   const oneSec = const Duration(seconds: 1);
   _timer = new Timer.periodic(
     oneSec,
@@ -77,10 +67,9 @@ class _MainPageState extends State<MainPage> {
   );
 }
 
-  void onListen() async{
+  void onListen()async{
     if(!isListening){
       startListening();
-      CountTime();
     }
     else{
       stopListening();
@@ -93,12 +82,14 @@ class _MainPageState extends State<MainPage> {
         setState(() {
         isListening=true;
       });
-      SpeechService.listening(speech, lastText);
+      speech.listen(
+        onResult: (result) => lastText=result.recognizedWords,
+      );
+      CountTime();
       }
   }
 
   void stopListening()async{
-  var support = await  speech.locales();
     setState(() {
         isListening=false;
       });
@@ -110,13 +101,12 @@ class _MainPageState extends State<MainPage> {
       });
   }
 
-  void initiSpeech() async{
+  void initiSpeech()async{
     available= await speech.initialize(
       onStatus: (status) => print("onStatus: $status"),
       onError: (error) =>print("onError: $error") ,
     );
   }
-
 
   @override
   void initState() {
@@ -138,15 +128,15 @@ class _MainPageState extends State<MainPage> {
         centerTitle: true,
         title:title
       ),
-      body: Column(
-        children: [
+      body: userManual==true? manualWidget(): Column(
+        children: [ 
           Container(
             height: MediaQuery.of(context).size.height*0.7,
             width: MediaQuery.of(context).size.width,
             child:isListening==true?Loading(isListening: isListening): ListView.builder(
               itemCount:userManual==true?listQuestions.length:listMessage.length,
               itemBuilder: (context,index){
-                return userManual==true? manualWidget(index: index): chatWidget(index: index, listMessage: listMessage);
+                return chatWidget(index: index, listMessage: listMessage);
               }
             ),
           ),
@@ -181,14 +171,3 @@ class chatWidget extends StatelessWidget {
   }
 }
 
-class manualWidget extends StatelessWidget {
-   manualWidget({
-    required this.index,
-    super.key,
-  });
-  int index;
-  @override
-  Widget build(BuildContext context) {
-    return Container(margin: EdgeInsets.only(left:120),child: Text(listQuestions[index]));
-  }
-}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_3/constant.dart';
+import 'package:flutter_application_3/define.dart';
 import 'package:flutter_application_3/view/widget/loading_widget.dart';
 
 class Loading extends StatelessWidget {
@@ -22,11 +23,12 @@ class Loading extends StatelessWidget {
                   },
                 ),
               ),
-              Expanded(
-                flex: 2,
-                child: Text('  Xin vui lòng nói câu hỏi và bấm nút dừng hoặc đợi sau 5s sau khi kết thúc câu hỏi để nhận câu trả lời.',style: TextStyle(fontSize: 18),))
-            ],
-          ),      
+            Expanded(
+              flex: 2,
+              child: titleWaiting
+          )
+        ],
+      ),      
     );
   }
 }
