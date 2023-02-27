@@ -18,14 +18,16 @@ class Loading extends StatelessWidget {
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
                   itemCount: listColor.length,
-                  itemBuilder: (context, index) {
-                    return LoadingWidget(colorLoading: listColor[index], isListening: isListening);
-                  },
+                  itemBuilder: (context, index) 
+                  =>LoadingWidget(
+                    colorLoading: listColor[index],
+                    isListening: isListening
+                  )
                 ),
               ),
             Expanded(
-              flex: 2,
-              child: titleWaiting
+            flex: 2,
+            child: titleWaiting
           )
         ],
       ),      

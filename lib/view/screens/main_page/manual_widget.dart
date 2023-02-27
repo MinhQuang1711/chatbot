@@ -8,18 +8,23 @@ class manualWidget extends StatelessWidget {
     return 
     Column(
       children: [
-        Container(
-          margin: EdgeInsets.only(top: 30,bottom: 20),
-          child: Expanded(child: Text(titleManual))),
+        Spacer(),
         Expanded(
+          flex: 1,
+          child: Text(titleManual)),
+        Expanded(
+          flex: 18,
           child: ListView.builder(
             itemCount: listQuestions.length,
             itemBuilder: (context, index) {
-              return Container(margin: EdgeInsets.only(left: 120), child: Text(listQuestions[index]));
+              return Container(
+                margin: EdgeInsets.only(left: 120),
+                child: Text(listQuestions[index])
+              );
             },
           ),
         ),
       ],
     );
-}
+  }
 }

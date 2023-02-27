@@ -23,14 +23,13 @@ class _MainPageState extends State<MainPage> {
   bool userManual=false;
   var msg;
   var available;
+  late Timer _timer;
   bool isListening= false;
   String lastText="";
   SpeechToText speech= SpeechToText(); 
   List<MessageModel> listMessage=[];
-  late Timer  _timer;
   tts.FlutterTts textToSpeech= tts.FlutterTts();
-
-
+  
   void startUserManual(){
     if(!userManual)
     {
@@ -46,8 +45,7 @@ class _MainPageState extends State<MainPage> {
       SpeechService.stopSpeak(textToSpeech);
     }
   }
-
-  Future<void> CountTime()async {
+  void CountTime()async {
   int _start = 5;
   const oneSec = const Duration(seconds: 1);
   _timer = new Timer.periodic(
@@ -66,7 +64,6 @@ class _MainPageState extends State<MainPage> {
     },
   );
 }
-
   void onListen()async{
     if(!isListening){
       startListening();
@@ -75,20 +72,19 @@ class _MainPageState extends State<MainPage> {
       stopListening();
     }
   }
-
-  void startListening(){
+  void startListening()async{
     if(available==true)
       {
         setState(() {
         isListening=true;
       });
+      
       speech.listen(
-        onResult: (result) => lastText=result.recognizedWords,
-      );
+      onResult: (result) => lastText=result.recognizedWords,
+      localeId: "vi_VN");
       CountTime();
       }
   }
-
   void stopListening()async{
     setState(() {
         isListening=false;
@@ -100,23 +96,18 @@ class _MainPageState extends State<MainPage> {
         listMessage.add(MessageModel(messages: msg, type: chatMessageType.bot));
       });
   }
-
   void initiSpeech()async{
-    available= await speech.initialize(
-      onStatus: (status) => print("onStatus: $status"),
-      onError: (error) =>print("onError: $error") ,
-    );
+    available= await speech.initialize();
   }
-
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     initiSpeech();
   }
-
   @override
   Widget build(BuildContext context) {
+    var height= MediaQuery.of(context).size.height*0.7;
+    var width= MediaQuery.of(context).size.width;
     return  Scaffold(
       appBar: AppBar(
         actions: [
@@ -124,26 +115,34 @@ class _MainPageState extends State<MainPage> {
           onPressed: ()=> startUserManual(),
           icon: iconQuestion)
         ],
-        backgroundColor: Colors.white,
+        backgroundColor: white,
         centerTitle: true,
         title:title
       ),
-      body: userManual==true? manualWidget(): Column(
-        children: [ 
+      body: userManual==true
+      ?manualWidget()
+      :Column(
+        children:[ 
           Container(
-            height: MediaQuery.of(context).size.height*0.7,
-            width: MediaQuery.of(context).size.width,
-            child:isListening==true?Loading(isListening: isListening): ListView.builder(
-              itemCount:userManual==true?listQuestions.length:listMessage.length,
-              itemBuilder: (context,index){
-                return chatWidget(index: index, listMessage: listMessage);
-              }
+            height: height,
+            width: width,
+            child:isListening==true
+            ?Loading(isListening:isListening)
+            :ListView.builder(
+              itemCount:userManual==true
+              ?listQuestions.length
+              :listMessage.length,
+              itemBuilder: (context,index)
+              =>chatWidget(
+                index: index,
+                listMessage:listMessage
+              )
             ),
           ),
           Center(
             child: FloatingActionButton(
-              backgroundColor: Colors.red.shade700,
-              child: Icon(!isListening?Icons.mic:Icons.stop),
+              backgroundColor: red,
+              child: Icon(!isListening?mic:stop),
               onPressed: ()=> onListen()
             ),
           )

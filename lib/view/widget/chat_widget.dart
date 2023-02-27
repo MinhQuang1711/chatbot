@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_3/define.dart';
 import 'package:flutter_application_3/model/message_model.dart';
 
 
@@ -21,7 +22,11 @@ class ChatWidget extends StatelessWidget {
         Container(
           margin: EdgeInsets.only(left: 5,top: 5),
           child: CircleAvatar(
-            backgroundImage: AssetImage(type==chatMessageType.user?'asset/image/user.png':'asset/image/Logo_giai_thuong_Sao_Khue.png'),
+            backgroundImage:
+            AssetImage(
+              type==chatMessageType.user
+              ?logoUser:logoSaoKhue
+            ),
           ),
         ),
         Container(
