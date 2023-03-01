@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_3/constant.dart';
+import 'package:flutter_application_3/constants/list.dart';
 import 'package:flutter_application_3/define.dart';
 class manualWidget extends StatelessWidget {
    manualWidget({super.key,});

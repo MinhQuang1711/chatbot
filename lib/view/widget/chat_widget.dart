@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_3/define.dart';
 import 'package:flutter_application_3/model/message_model.dart';
 
+import '../../constants/image.dart';
+
 
 class ChatWidget extends StatelessWidget {
   ChatWidget(
@@ -10,7 +12,7 @@ class ChatWidget extends StatelessWidget {
       required this.backgroundColor,
       required this.textMessage,
       super.key});
-  String? textMessage;
+  String textMessage;
   Color backgroundColor;
   Color textColor;
   chatMessageType ?type;
@@ -36,7 +38,7 @@ class ChatWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(25), color: backgroundColor),
           child: Center(
             child: Text(
-              textMessage!,
+              textMessage,
               style: TextStyle(color: textColor,fontSize: 14),
             ),
           ),
