@@ -93,6 +93,7 @@ class _MainPageState extends State<MainPage> {
         isListening=true;
       });
       await speech.listen(
+        localeId: "vi_VN",
         onResult: (result) => setState(() {
           lastText=result.recognizedWords;
         })); 
