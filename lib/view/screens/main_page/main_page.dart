@@ -13,7 +13,6 @@ import 'package:flutter_application_3/view/widget/chat_widget.dart';
 import 'package:flutter_tts/flutter_tts.dart' as tts;
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:flutter_application_3/constants/color.dart';
-
 import '../../../constants/icon.dart';
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -23,29 +22,18 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  bool userManual = false;
   var msg;
   var available;
-  late Timer _timer;
+  bool userManual = false;
   bool isListening = false;
+  late Timer _timer;
   String lastText = "";
+  SpeechService service= SpeechService();
   SpeechToText speech = SpeechToText();
-  tts.FlutterTts textToSpeech = tts.FlutterTts();
+  var textUserManual=titleManual+ listQuestions.join("");
 
-  void startUserManual() {
-    if (!userManual) {
-      setState(() {
-        userManual = true;
-      });
-      SpeechService.speak(listQuestions, textToSpeech);
-    } else {
-      setState(() {
-        userManual = false;
-      });
-      SpeechService.stopSpeak(textToSpeech);
-    }
-  }
-
+  void stopSpeak()=> service.stopSpeak();
+  void startSpeak(String text)=> service.speak(text);
   void CountTime() async {
     int _start = 5;
     const oneSec = const Duration(seconds: 1);
@@ -70,47 +58,64 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  void onListen() async {
+  void startUserManual() {
+    if (!userManual) {
+      setState(() {
+        userManual = true;
+      });
+      startSpeak(textUserManual);
+      
+    } else {
+      setState(() {
+        userManual = false;
+      });
+      stopSpeak();
+    }
+  }
+
+  void onListen(){
+    print('touched');
     if (!isListening) {
+      print('startListening');
       startListening();
     } else {
       stopListening();
     }
   }
 
-  void startListening() async {
-    if (available == true) {
-      setState(() {
-        isListening = true;
-      });
-      speech.listen(
-        onResult: (result) => lastText = result.recognizedWords,
-        localeId: "vi_VN");
-      CountTime();
-    }
-  }
-
-  void initText() {
-    lastText = "";
-  }
-  void stopListening() async {
-    setState(() {
-      isListening = false;
-    });
-    speech.stop();
-    listMessage.clear();
-    listMessage
-        .add(MessageModel(messages: lastText, type: chatMessageType.user));
-    msg = await Network.sendMessage(lastText);
-    setState(() {
-      listMessage.add(
-        MessageModel(messages: msg, type: chatMessageType.bot));
-      initText();
-    });
-  }
-
   void initiSpeech() async {
     available = await speech.initialize();
+  }
+  void startListening()async{
+    if(available==true)
+    {
+      setState(() {
+        isListening=true;
+      });
+      await speech.listen(
+        onResult: (result) => setState(() {
+          lastText=result.recognizedWords;
+        })); 
+       CountTime();
+    }
+  }
+  Future<String> sendData(String text)async{
+    listMessage.add(MessageModel(messages: text, type: chatMessageType.user));
+    String response=await Network.sendMessage(text); 
+    return response;
+  }
+  void stopListening()async{
+    setState(() {
+      isListening=false;
+    });
+    speech.stop();
+    listMessage.clear(); 
+    msg= await sendData(lastText);
+    setState(() {
+      listMessage.add(MessageModel(messages: msg, type: chatMessageType.bot));
+      lastText="";
+    });
+    startSpeak(msg);
   }
 
   @override
@@ -123,34 +128,37 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height * 0.7;
     var width = MediaQuery.of(context).size.width;
-    return Scaffold(
-      appBar: AppBar(actions: [
-        IconButton(onPressed: () => startUserManual(), icon: iconQuestion)
-      ], backgroundColor:color.white, centerTitle: true, title: title),
-      body: userManual == true
-          ? manualWidget()
-          : Column(
-              children: [
-                Container(
-                  height: height,
-                  width: width,
-                  child: isListening == true
-                      ? Loading(isListening: isListening)
-                      : ListView.builder(
-                          itemCount: userManual == true
-                              ? listQuestions.length
-                              : listMessage.length,
-                          itemBuilder: (context, index) => chatWidget(
-                              index: index, listMessage: listMessage)),
-                ),
-                Center(
-                  child: FloatingActionButton(
-                      backgroundColor: color.red,
-                      child: Icon(!isListening ? mic : stop),
-                      onPressed: () => onListen()),
-                )
-              ],
-            ),
+    return GestureDetector(
+      onTap: stopSpeak,
+      child: Scaffold(
+        appBar: AppBar(actions: [
+          IconButton(onPressed: () => startUserManual(), icon: iconQuestion)
+        ], backgroundColor:color.white, centerTitle: true, title: title),
+        body: userManual == true
+            ? manualWidget(size: width,)
+            : Column(
+                children: [
+                  Container(
+                    height: height,
+                    width: width,
+                    child: isListening == true
+                        ? Loading(isListening: isListening)
+                        : ListView.builder(
+                            itemCount: userManual == true
+                                ? listQuestions.length
+                                : listMessage.length,
+                            itemBuilder: (context, index) => chatWidget(
+                                index: index, listMessage: listMessage)),
+                  ),
+                  Center(
+                    child: FloatingActionButton(
+                        backgroundColor: color.red,
+                        child: Icon(!isListening ? mic : stop),
+                        onPressed: ()=>onListen()),
+                  )
+                ],
+              ),
+      ),
     );
   }
 }

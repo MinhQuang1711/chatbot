@@ -27,7 +27,10 @@ class Loading extends StatelessWidget {
               ),
             Expanded(
             flex: 2,
-            child: titleWaiting
+            child: Padding(
+              padding: const EdgeInsets.all(30.0),
+              child: titleWaiting,
+            )
           )
         ],
       ),      
